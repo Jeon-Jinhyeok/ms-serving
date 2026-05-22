@@ -8,6 +8,7 @@
 |------------------|------|
 | [infra](https://github.com/2025-PNU-CC-TERM-PROJECT/infra)        | Istio, Knative, KServe, 모니터링 도구를 포함한 Kubernetes 인프라 설치 스크립트 및 설정 파일 |
 | [ms-backend](https://github.com/2025-PNU-CC-TERM-PROJECT/ms-backend)    | Spring Boot 기반 백엔드 서비스. PostgreSQL과 연동되며 REST API 및 AI 모델 요청 처리 담당 |
+| inference-service | Node.js 기반 내부 추론 오케스트레이션 서비스. 백엔드 요청을 받아 이미지/텍스트 모델 서버 호출 담당 |
 | [ms-frontend](https://github.com/2025-PNU-CC-TERM-PROJECT/ms-frontend)   | Next.js 기반 프론트엔드. Kubernetes 클러스터 바깥(Vercel, S3+CloudFront, 별도 Nginx 등)에 배포하고 Istio API 도메인을 호출 |
 
 ## 📚 목차 (Table of Contents)
@@ -81,6 +82,7 @@ Kubernetes 기반 인프라 위에 KServe, Knative, Istio 등을 활용하여 �
 | 🚀 **Knative** | 서버리스 기능 제공 (auto-scaling, scale-to-zero) |
 | 🌐 **Istio** | 서비스 메시, 트래픽 라우팅 및 보안 관리 |
 | 🧩 **Spring Boot** | 백엔드 API 서버 |
+| 🧠 **Inference Service** | 모델 서버 호출 전담 내부 마이크로서비스 |
 | 🎨 **Next.js** | 사용자 프론트엔드 UI |
 
 ### 🔗 시연 영상 링크 - Demo

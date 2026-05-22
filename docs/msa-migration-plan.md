@@ -7,6 +7,7 @@ The first migration step is to keep `ms-frontend` outside the Kubernetes cluster
 ## Current Step Implemented
 
 - Added `api-gateway`, a lightweight Node.js BFF/proxy.
+- Added `inference-service`, an internal model orchestration service.
 - Added local Docker Compose environment under `infra/local`.
 - Added mock image/text model servers so local development does not require KServe.
 - Updated frontend API calls to use `src/lib/api.ts`.
@@ -26,6 +27,7 @@ Local endpoints:
 - Frontend: `http://localhost:3000`
 - API Gateway: `http://localhost:8088`
 - Backend: `http://localhost:8080`
+- Inference service: `http://localhost:8081`
 - Image mock model: `http://localhost:9001`
 - Text mock model: `http://localhost:9002`
 - PostgreSQL: `localhost:5432`
@@ -33,7 +35,7 @@ Local endpoints:
 The local call path is:
 
 ```text
-browser -> external ms-frontend -> Istio Ingress Gateway -> api-gateway -> ms-backend -> model servers
+browser -> external ms-frontend -> Istio Ingress Gateway -> api-gateway -> ms-backend -> inference-service -> model servers
 ```
 
 ## Kubernetes Application Layer
@@ -103,3 +105,23 @@ Recommended split order:
 2. Move usage history and stats into `history-service`.
 3. Move file storage into `file-service` and store objects in S3/GCS/MinIO.
 4. Split auth/user only after JWT issuer strategy is decided.
+
+## Transitional Routing Contract
+
+The API Gateway can now route each bounded context independently while still defaulting to the current monolithic backend:
+
+| Route family | Gateway env | Future service |
+| --- | --- | --- |
+| `/api/auth/*` | `AUTH_SERVICE_URL` | `auth-service` |
+| `/api/user/*`, `/user/*`, `/dashboard/usage-stats` | `USER_SERVICE_URL` | `user-service` or `history-service` |
+| `/dashboard/image-class`, `/dashboard/text-summary` | `INFERENCE_SERVICE_URL` | `inference-service` |
+
+This lets the team deploy one extracted service at a time without changing the frontend API base URL.
+
+Before applying the Kubernetes backend manifests, create `ms-backend-secrets` from `infra/secrets.example.yaml` and replace the example values.
+
+## Current MSA Boundary
+
+`inference-service` now owns model request normalization, model server timeouts, and model error translation. `ms-backend` still owns authentication, uploaded file persistence, and usage history, then delegates model execution to `inference-service` through `INTERNAL_INFERENCE_URL`.
+
+This keeps user-facing behavior stable while removing model-serving concerns from the monolithic backend.

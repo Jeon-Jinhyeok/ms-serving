@@ -3,28 +3,36 @@ import { URL } from "node:url";
 
 const PORT = Number(process.env.PORT || 8088);
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || BACKEND_URL;
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || BACKEND_URL;
+const INFERENCE_SERVICE_URL = process.env.INFERENCE_SERVICE_URL || BACKEND_URL;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
 const routes = [
-  { prefix: "/api/auth", target: BACKEND_URL },
-  { prefix: "/api/user", target: BACKEND_URL },
-  { prefix: "/user", target: BACKEND_URL, rewritePrefix: "/api/user" },
-  { prefix: "/dashboard", target: BACKEND_URL }
+  { prefix: "/api/auth", target: AUTH_SERVICE_URL },
+  { prefix: "/api/user", target: USER_SERVICE_URL },
+  { prefix: "/user", target: USER_SERVICE_URL, rewritePrefix: "/api/user" },
+  { prefix: "/dashboard/image-class", target: INFERENCE_SERVICE_URL },
+  { prefix: "/dashboard/text-summary", target: INFERENCE_SERVICE_URL },
+  { prefix: "/dashboard/usage-stats", target: USER_SERVICE_URL }
 ];
 
 function corsOrigin(origin) {
-  if (!origin) return "*";
+  if (!origin) return ALLOWED_ORIGINS.includes("*") ? "*" : ALLOWED_ORIGINS[0];
   if (ALLOWED_ORIGINS.includes("*") || ALLOWED_ORIGINS.includes(origin)) {
     return origin;
   }
-  return ALLOWED_ORIGINS[0] || origin;
+  return null;
 }
 
 function writeCors(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", corsOrigin(req.headers.origin));
+  const origin = corsOrigin(req.headers.origin);
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
@@ -80,7 +88,7 @@ const server = http.createServer((req, res) => {
   writeCors(req, res);
 
   if (req.method === "OPTIONS") {
-    res.writeHead(204);
+    res.writeHead(corsOrigin(req.headers.origin) ? 204 : 403);
     res.end();
     return;
   }
@@ -105,5 +113,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`api-gateway listening on :${PORT}`);
-  console.log(`proxying backend traffic to ${BACKEND_URL}`);
+  console.log(`auth traffic -> ${AUTH_SERVICE_URL}`);
+  console.log(`user traffic -> ${USER_SERVICE_URL}`);
+  console.log(`inference traffic -> ${INFERENCE_SERVICE_URL}`);
 });
