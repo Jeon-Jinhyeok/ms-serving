@@ -8,7 +8,7 @@
 |------------------|------|
 | [infra](https://github.com/2025-PNU-CC-TERM-PROJECT/infra)        | Istio, Knative, KServe, 모니터링 도구를 포함한 Kubernetes 인프라 설치 스크립트 및 설정 파일 |
 | [ms-backend](https://github.com/2025-PNU-CC-TERM-PROJECT/ms-backend)    | Spring Boot 기반 백엔드 서비스. PostgreSQL과 연동되며 REST API 및 AI 모델 요청 처리 담당 |
-| [ms-frontend](https://github.com/2025-PNU-CC-TERM-PROJECT/ms-backend)   | Next.js 기반 프론트엔드. 사용자 인터페이스 제공 및 Grafana/Kiali 등 외부 도구 연동 UI 제공 |
+| [ms-frontend](https://github.com/2025-PNU-CC-TERM-PROJECT/ms-frontend)   | Next.js 기반 프론트엔드. Kubernetes 클러스터 바깥(Vercel, S3+CloudFront, 별도 Nginx 등)에 배포하고 Istio API 도메인을 호출 |
 
 ## 📚 목차 (Table of Contents)
 
@@ -135,8 +135,14 @@ export DOCKER_REGISTRY=your-dockerhub-username
 #### 🖥️ 프론트엔드
 
 - **Frontend App**:  
-  [`http://ms-frontend.ms-frontend.{MAGIC_DOMAIN}`](http://ms-frontend.ms-frontend.{MAGIC_DOMAIN})
+  클러스터 바깥에 별도로 배포합니다. 배포 시 `NEXT_PUBLIC_API_URL`을 `http://api.{MAGIC_DOMAIN}` 또는 운영 API 도메인으로 설정합니다.
 > `MAGIC_DOMAIN` 값은 클러스터 외부 IP 또는 도메인 설정에 따라 자동 할당됩니다.
+---
+
+#### 🌐 API Gateway
+
+- **API Gateway**:  
+  [`http://api.{MAGIC_DOMAIN}`](http://api.{MAGIC_DOMAIN})
 ---
 
 #### 🤖 AI 서비스
